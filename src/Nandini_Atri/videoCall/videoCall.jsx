@@ -141,131 +141,205 @@
 
 
 
+// import { useEffect, useRef, useState } from "react";
+// import { MdOutlineVideoCall } from "react-icons/md";
+// import Peer from "peerjs";
+
+// const VideoCall = () => {
+//     const [peerId, setPeerId] = useState(""); 
+//     const [remotePeerIdValue, setRemotePeerIdValue] = useState("");
+//     const localVideoRef = useRef(null);
+//     const remoteVideoRef = useRef(null);
+//     const peerInstance = useRef(null);
+//     const currentCall = useRef(null);
+
+//     useEffect(() => {
+//         peerInstance.current = new Peer();
+
+//         peerInstance.current.on("open", (id) => {
+//             console.log("My peer ID is: " + id);
+//             setPeerId(id);
+//         });
+
+//         peerInstance.current.on("call", (call) => {
+//             console.log("📞 Incoming call...");
+//             navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+//                 .then((stream) => {
+//                     localVideoRef.current.srcObject = stream;
+//                     localVideoRef.current.play();
+
+//                     call.answer(stream);
+
+//                     call.on("stream", (remoteStream) => {
+//                         remoteVideoRef.current.srcObject = remoteStream;
+//                         remoteVideoRef.current.play();
+//                         console.log("✅ Remote stream received");
+//                     });
+
+//                     call.on("close", () => {
+//                         console.log("🔴 Call ended by remote user");
+//                     });
+
+//                     call.on("error", (err) => {
+//                         console.error("⚠️ Call error:", err);
+//                     });
+
+//                     currentCall.current = call;
+//                 })
+//                 .catch((err) => {
+//                     console.error("❌ Failed to get local stream:", err);
+//                 });
+//         });
+
+//         peerInstance.current.on("error", (err) => {
+//             console.error("⚠️ PeerJS error:", err);
+//         });
+
+//         return () => {
+//             if (peerInstance.current) {
+//                 peerInstance.current.destroy();
+//             }
+//         };
+//     }, []);
+
+//     const startCall = () => {
+//         if (!remotePeerIdValue) {
+//             alert("❗ Please enter a valid remote peer ID.");
+//             return;
+//         }
+
+//         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+//             .then((stream) => {
+//                 localVideoRef.current.srcObject = stream;
+//                 localVideoRef.current.play();
+
+//                 const call = peerInstance.current.call(remotePeerIdValue, stream);
+//                 if (!call) {
+//                     console.error("❌ Unable to call the remote peer.");
+//                     return;
+//                 }
+
+//                 call.on("stream", (remoteStream) => {
+//                     remoteVideoRef.current.srcObject = remoteStream;
+//                     remoteVideoRef.current.play();
+//                     console.log("✅ Remote stream received");
+//                 });
+
+//                 call.on("close", () => {
+//                     console.log("🔴 Call ended");
+//                 });
+
+//                 call.on("error", (err) => {
+//                     console.error("⚠️ Call error:", err);
+//                 });
+
+//                 currentCall.current = call;
+//             })
+//             .catch((err) => {
+//                 console.error("❌ Failed to get local stream:", err);
+//             });
+//     };
+
+//     return (
+//         <div className="videocall-main-div" style={{ padding: "20px", fontFamily: "sans-serif" }}>
+//             <div className="videocall-header" style={{ marginBottom: "20px" }}>
+//                 <h1>📹 Start a Video Call</h1>
+//                 <p>Your Peer ID: <b>{peerId}</b></p>
+//                 <input
+//                     type="text"
+//                     placeholder="Enter remote peer ID"
+//                     value={remotePeerIdValue}
+//                     onChange={(e) => setRemotePeerIdValue(e.target.value)}
+//                     style={{ padding: "8px", marginRight: "10px", borderRadius: "5px" }}
+//                 />
+//                 <button onClick={startCall} style={{ padding: "8px 12px", borderRadius: "5px", cursor: "pointer" }}>
+//                     <MdOutlineVideoCall size={24} />
+//                 </button>
+//             </div>
+
+//             <div className="videocall-body" style={{ display: "flex", gap: "40px" }}>
+//                 <div>
+//                     <h3>Your Video</h3>
+//                     <video ref={localVideoRef} muted autoPlay style={{ width: "300px", borderRadius: "10px", background: "#000" }} />
+//                 </div>
+//                 <div>
+//                     <h3>Remote Video</h3>
+//                     <video ref={remoteVideoRef} autoPlay style={{ width: "300px", borderRadius: "10px", background: "#000" }} />
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default VideoCall;
+
+
+
+
 import { useEffect, useRef, useState } from "react";
 import { MdOutlineVideoCall } from "react-icons/md";
 import Peer from "peerjs";
 
 const VideoCall = () => {
     const [peerId, setPeerId] = useState("");
-    const [remotePeerIdValue, setRemotePeerIdValue] = useState("");
-    const localVideoRef = useRef(null);
-    const remoteVideoRef = useRef(null);
-    const peerInstance = useRef(null);
-    const currentCall = useRef(null);
+    const [remoteId, setRemoteId] = useState("");
+    const localRef = useRef(null);
+    const remoteRef = useRef(null);
+    const peer = useRef(null);
+    const callRef = useRef(null);
 
     useEffect(() => {
-        peerInstance.current = new Peer();
+        const newPeer = new Peer();
+        console.log(newPeer);
+        
+        peer.current = newPeer;
 
-        peerInstance.current.on("open", (id) => {
-            console.log("My peer ID is: " + id);
-            setPeerId(id);
+        newPeer.on("open", (id) => setPeerId(id));
+
+        newPeer.on("call", async (call) => {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localRef.current.srcObject = stream;
+            localRef.current.play();
+            call.answer(stream);
+
+            call.on("stream", (remoteStream) => {
+                remoteRef.current.srcObject = remoteStream;
+                remoteRef.current.play();
+            });
+
+            callRef.current = call;
         });
 
-        peerInstance.current.on("call", (call) => {
-            console.log("📞 Incoming call...");
-            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-                .then((stream) => {
-                    localVideoRef.current.srcObject = stream;
-                    localVideoRef.current.play();
-
-                    call.answer(stream);
-
-                    call.on("stream", (remoteStream) => {
-                        remoteVideoRef.current.srcObject = remoteStream;
-                        remoteVideoRef.current.play();
-                        console.log("✅ Remote stream received");
-                    });
-
-                    call.on("close", () => {
-                        console.log("🔴 Call ended by remote user");
-                    });
-
-                    call.on("error", (err) => {
-                        console.error("⚠️ Call error:", err);
-                    });
-
-                    currentCall.current = call;
-                })
-                .catch((err) => {
-                    console.error("❌ Failed to get local stream:", err);
-                });
-        });
-
-        peerInstance.current.on("error", (err) => {
-            console.error("⚠️ PeerJS error:", err);
-        });
-
-        return () => {
-            if (peerInstance.current) {
-                peerInstance.current.destroy();
-            }
-        };
+        return () => newPeer.destroy();
     }, []);
 
-    const startCall = () => {
-        if (!remotePeerIdValue) {
-            alert("❗ Please enter a valid remote peer ID.");
-            return;
-        }
+    const startCall = async () => {
+        if (!remoteId) return alert("Enter remote peer ID");
 
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-            .then((stream) => {
-                localVideoRef.current.srcObject = stream;
-                localVideoRef.current.play();
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localRef.current.srcObject = stream;
+        localRef.current.play();
 
-                const call = peerInstance.current.call(remotePeerIdValue, stream);
-                if (!call) {
-                    console.error("❌ Unable to call the remote peer.");
-                    return;
-                }
+        const call = peer.current.call(remoteId, stream);
 
-                call.on("stream", (remoteStream) => {
-                    remoteVideoRef.current.srcObject = remoteStream;
-                    remoteVideoRef.current.play();
-                    console.log("✅ Remote stream received");
-                });
+        call.on("stream", (remoteStream) => {
+            remoteRef.current.srcObject = remoteStream;
+            remoteRef.current.play();
+        });
 
-                call.on("close", () => {
-                    console.log("🔴 Call ended");
-                });
-
-                call.on("error", (err) => {
-                    console.error("⚠️ Call error:", err);
-                });
-
-                currentCall.current = call;
-            })
-            .catch((err) => {
-                console.error("❌ Failed to get local stream:", err);
-            });
+        callRef.current = call;
     };
 
     return (
-        <div className="videocall-main-div" style={{ padding: "20px", fontFamily: "sans-serif" }}>
-            <div className="videocall-header" style={{ marginBottom: "20px" }}>
-                <h1>📹 Start a Video Call</h1>
-                <p>Your Peer ID: <b>{peerId}</b></p>
-                <input
-                    type="text"
-                    placeholder="Enter remote peer ID"
-                    value={remotePeerIdValue}
-                    onChange={(e) => setRemotePeerIdValue(e.target.value)}
-                    style={{ padding: "8px", marginRight: "10px", borderRadius: "5px" }}
-                />
-                <button onClick={startCall} style={{ padding: "8px 12px", borderRadius: "5px", cursor: "pointer" }}>
-                    <MdOutlineVideoCall size={24} />
-                </button>
-            </div>
+        <div style={{ padding: 20 }}>
+            <h2>🎥 Video Call</h2>
+            <p>Your ID: <b>{peerId}</b></p>
+            <input value={remoteId} onChange={(e) => setRemoteId(e.target.value)} placeholder="Remote ID" />
+            <button onClick={startCall}><MdOutlineVideoCall size={24} /></button>
 
-            <div className="videocall-body" style={{ display: "flex", gap: "40px" }}>
-                <div>
-                    <h3>Your Video</h3>
-                    <video ref={localVideoRef} muted autoPlay style={{ width: "300px", borderRadius: "10px", background: "#000" }} />
-                </div>
-                <div>
-                    <h3>Remote Video</h3>
-                    <video ref={remoteVideoRef} autoPlay style={{ width: "300px", borderRadius: "10px", background: "#000" }} />
-                </div>
+            <div style={{ display: "flex", gap: 20, marginTop: 20 }}>
+                <video ref={localRef} muted autoPlay style={{ width: 300, background: "#000" }} />
+                <video ref={remoteRef} autoPlay style={{ width: 300, background: "#000" }} />
             </div>
         </div>
     );
