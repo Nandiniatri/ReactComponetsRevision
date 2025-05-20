@@ -577,18 +577,17 @@ const VideoCall = () => {
 
   useEffect(() => {
     const newPeer = new Peer(undefined, {
-      config: {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          // Agar TURN server chahiye to is tarah add karo:
-          // {
-          //   urls: "turn:your.turn.server:3478",
-          //   username: "yourUsername",
-          //   credential: "yourCredential",
-          // },
-        ],
+  config: {
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      {
+        urls: "turn:global.xirsys.net:3478?transport=udp",
+        username: "NandiniAtri",
+        credential: "75655126-3595-11f0-a5e5-0242ac150003",
       },
-    });
+    ],
+  },
+}); 
 
     peer.current = newPeer;
 
