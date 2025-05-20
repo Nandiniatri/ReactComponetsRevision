@@ -411,6 +411,144 @@
 
 
 
+// import { useEffect, useRef, useState } from "react";
+// import { MdOutlineVideoCall } from "react-icons/md";
+// import Peer from "peerjs";
+
+// const VideoCall = () => {
+//   const [peerId, setPeerId] = useState("");
+//   const [remoteId, setRemoteId] = useState("");
+//   const localRef = useRef(null);
+//   const remoteRef = useRef(null);
+//   const peer = useRef(null);
+//   const callRef = useRef(null);
+
+//   const safePlay = async (video) => {
+//     if (!video) return;
+//     try {
+//       await video.play();
+//     } catch (error) {
+//       if (error.name !== "AbortError") {
+//         console.error("Video play error:", error);
+//       }
+//     }
+//   };
+
+//   useEffect(() => {
+//     const newPeer = new Peer();
+
+//     peer.current = newPeer;
+
+//     newPeer.on("open", (id) => {
+//       console.log("My peer ID is: ", id);
+//       setPeerId(id);
+//     });
+
+//     newPeer.on("call", async (call) => {
+//       console.log("Incoming call received.");
+//       try {
+//         const stream = await navigator.mediaDevices.getUserMedia({
+//           video: true,
+//           audio: true,
+//         });
+
+//         if (callRef.current) callRef.current.close();
+
+//         localRef.current.srcObject = stream;
+//         await safePlay(localRef.current);
+
+//         call.answer(stream);
+
+//         call.on("stream", async (remoteStream) => {
+//           console.log("Remote stream received.");
+//           remoteRef.current.srcObject = remoteStream;
+//           await safePlay(remoteRef.current);
+//         });
+
+//         callRef.current = call;
+//       } catch (err) {
+//         console.error("Error answering call: ", err);
+//       }
+//     });
+
+//     return () => {
+//       if (peer.current && !peer.current.destroyed) {
+//         peer.current.destroy();
+//       }
+//     };
+//   }, []);
+
+//   const startCall = async () => {
+//     if (!remoteId) {
+//       alert("Please enter remote peer ID.");
+//       return;
+//     }
+
+//     try {
+//       const stream = await navigator.mediaDevices.getUserMedia({
+//         video: true,
+//         audio: true,
+//       });
+
+//       if (callRef.current) callRef.current.close();
+
+//       localRef.current.srcObject = stream;
+//       await safePlay(localRef.current);
+
+//       const call = peer.current.call(remoteId, stream);
+
+//       call.on("stream", async (remoteStream) => {
+//         console.log("Received remote stream from call.");
+//         remoteRef.current.srcObject = remoteStream;
+//         await safePlay(remoteRef.current);
+//       });
+
+//       callRef.current = call;
+//     } catch (err) {
+//       console.error("Error starting call: ", err);
+//     }
+//   };
+
+//   return (
+//     <div style={{ padding: 20 }}>
+//       <h2>🎥 Video Call</h2>
+//       <p>
+//         Your ID: <b>{peerId}</b>
+//       </p>
+
+//       <input
+//         type="text"
+//         value={remoteId}
+//         onChange={(e) => setRemoteId(e.target.value)}
+//         placeholder="Enter Remote ID"
+//       />
+//       <button onClick={startCall} disabled={!peerId || !remoteId}>
+//         <MdOutlineVideoCall size={24} />
+//       </button>
+
+//       <div style={{ display: "flex", gap: 20, marginTop: 20 }}>
+//         <video
+//           ref={localRef}
+//           muted
+//           autoPlay
+//           playsInline
+//           style={{ width: 300, background: "#000" }}
+//         />
+//         <video
+//           ref={remoteRef}
+//           autoPlay
+//           playsInline
+//           style={{ width: 300, background: "#000" }}
+//         />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default VideoCall;
+
+
+
 import { useEffect, useRef, useState } from "react";
 import { MdOutlineVideoCall } from "react-icons/md";
 import Peer from "peerjs";
@@ -435,7 +573,19 @@ const VideoCall = () => {
   };
 
   useEffect(() => {
-    const newPeer = new Peer();
+    const newPeer = new Peer(undefined, {
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          // Agar TURN server chahiye to is tarah add karo:
+          // {
+          //   urls: "turn:your.turn.server:3478",
+          //   username: "yourUsername",
+          //   credential: "yourCredential",
+          // },
+        ],
+      },
+    });
 
     peer.current = newPeer;
 
