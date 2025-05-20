@@ -549,151 +549,273 @@
 
 
 
-import { useEffect, useRef, useState } from "react";
-import { MdOutlineVideoCall } from "react-icons/md";
-import Peer from "peerjs";
 
-const VideoCall = () => {
-  const [peerId, setPeerId] = useState("");
-  const [remoteId, setRemoteId] = useState("");
-  const localRef = useRef(null);
-  const remoteRef = useRef(null);
+
+
+// import { useEffect, useRef, useState } from "react";
+// import { MdOutlineVideoCall } from "react-icons/md";
+// import Peer from "peerjs";
+
+// const VideoCall = () => {
+//   const [peerId, setPeerId] = useState("");
+//   const [remoteId, setRemoteId] = useState("");
+//   const localRef = useRef(null);
+//   const remoteRef = useRef(null);
+//   const peer = useRef(null);
+//   const callRef = useRef(null);
+
+//   const safePlay = async (video) => {
+//     if (!video) return;
+//     try {
+//       await video.play();
+//     } catch (error) {
+//       if (error.name !== "AbortError") {
+//         console.error("Video play error:", error);
+//       }
+//     }
+//   };
+
+//   useEffect(() => {
+//     const newPeer = new Peer(undefined, {
+//       config: {
+//         iceServers: [
+//           { urls: "stun:stun.l.google.com:19302" },
+//           // Agar TURN server chahiye to is tarah add karo:
+//           // {
+//           //   urls: "turn:your.turn.server:3478",
+//           //   username: "yourUsername",
+//           //   credential: "yourCredential",
+//           // },
+//         ],
+//       },
+//     });
+
+//     peer.current = newPeer;
+
+//     newPeer.on("open", (id) => {
+//       console.log("My peer ID is: ", id);
+//       setPeerId(id);
+//     });
+
+//     newPeer.on("call", async (call) => {
+//       console.log("Incoming call received.");
+//       try {
+//         const stream = await navigator.mediaDevices.getUserMedia({
+//           video: true,
+//           audio: true,
+//         });
+
+//         if (callRef.current) callRef.current.close();
+
+//         localRef.current.srcObject = stream;
+//         await safePlay(localRef.current);
+
+//         call.answer(stream);
+
+//         call.on("stream", async (remoteStream) => {
+//           console.log("Remote stream received.");
+//           remoteRef.current.srcObject = remoteStream;
+//           await safePlay(remoteRef.current);
+//         });
+
+//         callRef.current = call;
+//       } catch (err) {
+//         console.error("Error answering call: ", err);
+//       }
+//     });
+
+//     return () => {
+//       if (peer.current && !peer.current.destroyed) {
+//         peer.current.destroy();
+//       }
+//     };
+//   }, []);
+
+//   const startCall = async () => {
+//     if (!remoteId) {
+//       alert("Please enter remote peer ID.");
+//       return;
+//     }
+
+//     try {
+//       const stream = await navigator.mediaDevices.getUserMedia({
+//         video: true,
+//         audio: true,
+//       });
+
+//       if (callRef.current) callRef.current.close();
+
+//       localRef.current.srcObject = stream;
+//       await safePlay(localRef.current);
+
+//       const call = peer.current.call(remoteId, stream);
+
+//       call.on("stream", async (remoteStream) => {
+//         console.log("Received remote stream from call.");
+//         remoteRef.current.srcObject = remoteStream;
+//         await safePlay(remoteRef.current);
+//       });
+
+//       callRef.current = call;
+//     } catch (err) {
+//       console.error("Error starting call: ", err);
+//     }
+//   };
+
+//   return (
+//     <div style={{ padding: 20 }}>
+//       <h2>🎥 Video Call</h2>
+//       <p>
+//         Your ID: <b>{peerId}</b>
+//       </p>
+
+//       <input
+//         type="text"
+//         value={remoteId}
+//         onChange={(e) => setRemoteId(e.target.value)}
+//         placeholder="Enter Remote ID"
+//       />
+//       <button onClick={startCall} disabled={!peerId || !remoteId}>
+//         <MdOutlineVideoCall size={24} />
+//       </button>
+
+//       <div style={{ display: "flex", gap: 20, marginTop: 20 }}>
+//         <video
+//           ref={localRef}
+//           muted
+//           autoPlay
+//           playsInline
+//           style={{ width: 300, background: "#000" }}
+//         />
+//         <video
+//           ref={remoteRef}
+//           autoPlay
+//           playsInline
+//           style={{ width: 300, background: "#000" }}
+//         />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default VideoCall;
+    
+
+
+
+
+import React, { useState, useRef, useEffect } from 'react';
+import Peer from 'peerjs';
+
+function App() {
+  const [peerId, setPeerId] = useState('');
+  const [callId, setCallId] = useState('');
+  const [isCalling, setIsCalling] = useState(false);
+  const [callStarted, setCallStarted] = useState(false);
+  const localVideoRef = useRef();
+  const remoteVideoRef = useRef();
   const peer = useRef(null);
-  const callRef = useRef(null);
-
-  const safePlay = async (video) => {
-    if (!video) return;
-    try {
-      await video.play();
-    } catch (error) {
-      if (error.name !== "AbortError") {
-        console.error("Video play error:", error);
-      }
-    }
-  };
+  const localStream = useRef(null);
+  const remoteStream = useRef(new MediaStream());
 
   useEffect(() => {
-    const newPeer = new Peer(undefined, {
-      config: {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          // Agar TURN server chahiye to is tarah add karo:
-          // {
-          //   urls: "turn:your.turn.server:3478",
-          //   username: "yourUsername",
-          //   credential: "yourCredential",
-          // },
-        ],
-      },
+    // Initialize PeerJS
+    peer.current = new Peer(undefined, {
+      host: 'peerjs.com',
+      secure: true,
+      port: 443,
     });
 
-    peer.current = newPeer;
-
-    newPeer.on("open", (id) => {
-      console.log("My peer ID is: ", id);
+    // Get local peer ID once connected to PeerJS server
+    peer.current.on('open', (id) => {
       setPeerId(id);
     });
 
-    newPeer.on("call", async (call) => {
-      console.log("Incoming call received.");
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-
-        if (callRef.current) callRef.current.close();
-
-        localRef.current.srcObject = stream;
-        await safePlay(localRef.current);
-
-        call.answer(stream);
-
-        call.on("stream", async (remoteStream) => {
-          console.log("Remote stream received.");
-          remoteRef.current.srcObject = remoteStream;
-          await safePlay(remoteRef.current);
-        });
-
-        callRef.current = call;
-      } catch (err) {
-        console.error("Error answering call: ", err);
-      }
+    // Handle incoming call
+    peer.current.on('call', (call) => {
+      call.answer(localStream.current);
+      call.on('stream', (stream) => {
+        remoteStream.current = stream;
+        remoteVideoRef.current.srcObject = remoteStream.current;
+      });
     });
 
+    // Clean up peer connection when unmounting
     return () => {
-      if (peer.current && !peer.current.destroyed) {
-        peer.current.destroy();
-      }
+      if (peer.current) peer.current.destroy();
     };
   }, []);
 
   const startCall = async () => {
-    if (!remoteId) {
-      alert("Please enter remote peer ID.");
-      return;
-    }
+    // Get user's media (audio and video)
+    localStream.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
+    localVideoRef.current.srcObject = localStream.current;
 
-      if (callRef.current) callRef.current.close();
+    // Create a call to the target peer
+    const call = peer.current.call(callId, localStream.current);
+    setIsCalling(true);
 
-      localRef.current.srcObject = stream;
-      await safePlay(localRef.current);
+    call.on('stream', (stream) => {
+      remoteStream.current = stream;
+      remoteVideoRef.current.srcObject = remoteStream.current;
+      setCallStarted(true);
+    });
+  };
 
-      const call = peer.current.call(remoteId, stream);
+  const answerCall = async () => {
+    // Answer an incoming call with user's media
+    const call = await peer.current.call(callId, localStream.current);
+    setIsCalling(true);
 
-      call.on("stream", async (remoteStream) => {
-        console.log("Received remote stream from call.");
-        remoteRef.current.srcObject = remoteStream;
-        await safePlay(remoteRef.current);
-      });
-
-      callRef.current = call;
-    } catch (err) {
-      console.error("Error starting call: ", err);
-    }
+    call.on('stream', (stream) => {
+      remoteStream.current = stream;
+      remoteVideoRef.current.srcObject = remoteStream.current;
+      setCallStarted(true);
+    });
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>🎥 Video Call</h2>
-      <p>
-        Your ID: <b>{peerId}</b>
-      </p>
-
-      <input
-        type="text"
-        value={remoteId}
-        onChange={(e) => setRemoteId(e.target.value)}
-        placeholder="Enter Remote ID"
-      />
-      <button onClick={startCall} disabled={!peerId || !remoteId}>
-        <MdOutlineVideoCall size={24} />
-      </button>
-
-      <div style={{ display: "flex", gap: 20, marginTop: 20 }}>
-        <video
-          ref={localRef}
-          muted
-          autoPlay
-          playsInline
-          style={{ width: 300, background: "#000" }}
-        />
-        <video
-          ref={remoteRef}
-          autoPlay
-          playsInline
-          style={{ width: 300, background: "#000" }}
-        />
+    <div style={{ textAlign: 'center' }}>
+      <h1>WebRTC Video Call with Peer.js</h1>
+      <video ref={localVideoRef} autoPlay muted width="300" />
+      <video ref={remoteVideoRef} autoPlay width="300" />
+      <div style={{ marginTop: 20 }}>
+        {!callStarted ? (
+          <>
+            {!isCalling ? (
+              <>
+                <div>
+                  <strong>Your Peer ID:</strong> <code>{peerId}</code>
+                </div>
+                <div style={{ marginTop: 10 }}>
+                  <input
+                    value={callId}
+                    onChange={(e) => setCallId(e.target.value)}
+                    placeholder="Enter Peer ID to call"
+                    style={{ padding: '5px' }}
+                  />
+                </div>
+                <button onClick={startCall} style={{ marginTop: 10 }}>
+                  📞 Start Call
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={answerCall} style={{ marginTop: 10 }}>
+                  🎧 Answer Call
+                </button>
+              </>
+            )}
+          </>
+        ) : (
+          <div style={{ marginTop: 20 }}>
+            <strong>Call Started!</strong>
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}
 
-export default VideoCall;
-    
+export default App;
