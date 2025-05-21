@@ -88,7 +88,7 @@
 import Peer from "peerjs";
 import { useEffect, useRef, useState } from "react";
 
-const VideoCall = () => {
+const VideoCalls = () => {
     const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
     const [peerId, setPeerId] = useState("");
@@ -180,4 +180,4 @@ const VideoCall = () => {
     );
 };
 
-export default VideoCall;
+export default VideoCalls;
