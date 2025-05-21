@@ -174,7 +174,7 @@ const VideoCall1 = () => {
     const newPeer = new Peer(undefined, {
       config: {
         iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
+        //   { urls: "stun:stun.l.google.com:19302" },
           {
             urls: "turn:global.xirsys.net:3478?transport=udp",
             username: "NandiniAtri",
