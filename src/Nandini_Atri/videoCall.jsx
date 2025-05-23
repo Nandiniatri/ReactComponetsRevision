@@ -97,6 +97,7 @@ const VideoCalls = () => {
   const [peerId, setPeerId] = useState("");
   const [inputPeerId, setInputPeerId] = useState("");
 
+  
   useEffect(() => {
     // TURN + STUN servers config
     const peer = new Peer({
