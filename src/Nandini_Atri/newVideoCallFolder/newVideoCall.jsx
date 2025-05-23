@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import usePeer from "../customHook/usePeer"; // apni actual path ke hisaab se adjust karo
+import usePeer from "../../customHook/usePeer";
 
 const NewVideoCall = () => {
   const { peer, peerId } = usePeer();
