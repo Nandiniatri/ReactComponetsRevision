@@ -1,13 +1,3 @@
-// const VoiceAssistant  = () => {
-//     return (
-//         <>
-
-//         </>
-//     )
-// }
-
-// export default VoiceAssistant;
-
 import React from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
@@ -20,6 +10,10 @@ const speak = (text) => {
 
 const VoiceAssistant = () => {
   const { transcript, listening, resetTranscript } = useSpeechRecognition();
+
+  const fetchData = () => {
+    const response = 
+  }
 
   const handleStart = () => {
     resetTranscript();
@@ -37,6 +31,8 @@ const VoiceAssistant = () => {
       speak("Sorry, I didn't understand.");
     }
   };
+
+
 
   return (
     <div style={{ padding: 20 }}>

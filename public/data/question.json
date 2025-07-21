@@ -1,0 +1,17 @@
+[
+    {
+        "id":1,
+        "question":"hello",
+        "answer":"Hello! How can I help you?"
+    },
+    {
+        "id":2,
+        "question":"hi",
+        "answer":"Hello! How can I help you?"
+    },
+       {
+        "id":3,
+        "question":"my name is nandini",
+        "answer":"Hello! Nandini How are you?"
+    }
+]
