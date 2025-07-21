@@ -11,7 +11,6 @@ function App() {
       {/* <NandiniAtri /> */}
       {/* <VideoCalls /> */}
       {/* <NewVideoCall /> */}
-
       {/* <ResponsiveDesign /> */}
     </>
   )
