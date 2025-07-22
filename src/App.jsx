@@ -1,3 +1,4 @@
+import InterviewBot from './aI Assi/InterviewBot'
 import VoiceAssistant from './aI Assi/VoiceAssistant'
 import './App.css'
 import NandiniAtri from './Nandini_Atri/nandiniATri'
@@ -13,7 +14,8 @@ function App() {
       {/* <VideoCalls /> */}
       {/* <NewVideoCall /> */}
       {/* <ResponsiveDesign /> */}
-      <VoiceAssistant />
+      {/* <VoiceAssistant /> */}
+      <InterviewBot />
     </>
   )
 }

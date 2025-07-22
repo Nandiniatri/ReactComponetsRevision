@@ -128,8 +128,6 @@ const VoiceAssistant = () => {
     }
   };
 
-
-
   return (
     <div style={{ padding: 20 }}>
       <h2>🎙 Simple Voice Assistant</h2>
